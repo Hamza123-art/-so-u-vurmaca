@@ -2,83 +2,78 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Windows XP Vurmaca - Online Sesli</title>
+    <title>XP Vurmaca - Bab-ayak Edition</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; cursor: crosshair; }
-        canvas { display: block; background-color: #000; }
-        #skorTablosu {
-            position: absolute; top: 20px; left: 20px;
-            color: white; font-size: 32px; font-weight: bold;
-            text-shadow: 2px 2px 4px #000; pointer-events: none;
-        }
-        #baslaMesaji {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: white; font-size: 24px; background: rgba(0,0,0,0.7);
-            padding: 20px; border-radius: 10px; text-align: center;
+        body { margin: 0; overflow: hidden; font-family: 'Tahoma', sans-serif; cursor: none; }
+        canvas { display: block; }
+        #skorPaneli {
+            position: absolute; top: 15px; left: 15px; 
+            color: white; font-size: 28px; font-weight: bold;
+            text-shadow: 2px 2px #000; pointer-events: none;
+            background: rgba(0, 100, 0, 0.5); padding: 10px; border-radius: 5px;
         }
     </style>
 </head>
 <body>
-
-    <div id="skorTablosu">Skor: 0</div>
-    <div id="baslaMesaji">Oyunu Başlatmak ve Sesi Açmak İçin Ekrana Tıkla Gardaşım!</div>
+    <div id="skorPaneli">Skor: <span id="skor">0</span></div>
     <canvas id="oyunAlani"></canvas>
 
-    <audio id="arkaPlanSes" loop>
-        <source src="https://www.youtube.com/watch?v=ZglBJAfF-wU&list=RDZglBJAfF-wU&start_radio=1" type="audio/mpeg">
+    <audio id="babayakSes" loop>
+        <source src="bab-ayak.mp3" type="audio/mpeg">
     </audio>
 
     <script>
         const canvas = document.getElementById("oyunAlani");
         const ctx = canvas.getContext("2d");
-        const skorYazi = document.getElementById("skorTablosu");
-        const baslaMesaji = document.getElementById("baslaMesaji");
+        const skorYazi = document.getElementById("skor");
+        const ses = document.getElementById("babayakSes");
 
         let skor = 0;
-        let oyunBasladi = false;
-
+        let oyunAktif = false;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const arkaplanImg = new Image();
-        arkaplanImg.src = 'arkaplan.jpg'; 
+        const arkaplan = new Image(); arkaplan.src = 'arkaplan.jpg';
+        const hedef = new Image(); hedef.src = 'hedef.png';
 
-        const hedefImg = new Image();
-        hedefImg.src = 'hedef.png'; 
+        let hedefObj = { x: 300, y: 300, w: 140, h: 140 };
+        let mouse = { x: 0, y: 0 };
 
-        let hedef = { x: 100, y: 100, width: 150, height: 150 };
+        window.addEventListener("mousemove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
-        function yeniKonum() {
-            hedef.x = Math.random() * (canvas.width - hedef.width);
-            hedef.y = Math.random() * (canvas.height - hedef.height);
-        }
-
-        function ciz() {
-            ctx.drawImage(arkaplanImg, 0, 0, canvas.width, canvas.height);
-            ctx.drawImage(hedefImg, hedef.x, hedef.y, hedef.width, hedef.height);
-            requestAnimationFrame(ciz);
-        }
-
-        canvas.addEventListener("mousedown", (e) => {
-            if(!oyunBasladi) {
-                const ses = document.getElementById("arkaPlanSes");
-                ses.play().catch(error => console.log("Ses oynatılamadı:", error));
-                oyunBasladi = true;
-                baslaMesaji.style.display = "none";
+        window.addEventListener("mousedown", () => {
+            // İlk tıklamada müziği başlat
+            if(!oyunAktif) {
+                ses.play();
+                oyunAktif = true;
             }
 
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
-
-            if (mouseX >= hedef.x && mouseX <= hedef.x + hedef.width &&
-                mouseY >= hedef.y && mouseY <= hedef.y + hedef.height) {
+            // Vurma kontrolü
+            if(mouse.x > hedefObj.x && mouse.x < hedefObj.x + hedefObj.w &&
+               mouse.y > hedefObj.y && mouse.y < hedefObj.y + hedefObj.h) {
                 skor += 100;
-                skorYazi.innerText = "Skor: " + skor;
-                yeniKonum();
+                skorYazi.innerText = skor;
+                // Yeni rastgele konum
+                hedefObj.x = Math.random() * (canvas.width - hedefObj.w);
+                hedefObj.y = Math.random() * (canvas.height - hedefObj.h);
             }
         });
 
-        arkaplanImg.onload = () => { yeniKonum(); ciz(); };
+        function render() {
+            ctx.drawImage(arkaplan, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(hedef, hedefObj.x, hedefObj.y, hedefObj.w, hedefObj.h);
+            
+            // XP Tarzı Nişangah
+            ctx.strokeStyle = "rgba(255, 0, 0, 0.8)";
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 20, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(mouse.x - 30, mouse.y); ctx.lineTo(mouse.x + 30, mouse.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(mouse.x, mouse.y - 30); ctx.lineTo(mouse.x, mouse.y + 30); ctx.stroke();
+            
+            requestAnimationFrame(render);
+        }
+
+        arkaplan.onload = render;
     </script>
 </body>
 </html>
