@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Windows XP Vurmaca - GitHub Edition</title>
+    <title>Windows XP Vurmaca - Online Sesli</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; cursor: crosshair; }
         canvas { display: block; background-color: #000; }
@@ -11,44 +11,42 @@
             color: white; font-size: 32px; font-weight: bold;
             text-shadow: 2px 2px 4px #000; pointer-events: none;
         }
+        #baslaMesaji {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: white; font-size: 24px; background: rgba(0,0,0,0.7);
+            padding: 20px; border-radius: 10px; text-align: center;
+        }
     </style>
 </head>
 <body>
 
     <div id="skorTablosu">Skor: 0</div>
+    <div id="baslaMesaji">Oyunu Başlatmak ve Sesi Açmak İçin Ekrana Tıkla Gardaşım!</div>
     <canvas id="oyunAlani"></canvas>
 
     <audio id="arkaPlanSes" loop>
-        <source src="arkaplan_sesi.wav" type="audio/wav">
+        <source src="https://www.youtube.com/watch?v=ZglBJAfF-wU&list=RDZglBJAfF-wU&start_radio=1" type="audio/mpeg">
     </audio>
 
     <script>
         const canvas = document.getElementById("oyunAlani");
         const ctx = canvas.getContext("2d");
         const skorYazi = document.getElementById("skorTablosu");
+        const baslaMesaji = document.getElementById("baslaMesaji");
 
         let skor = 0;
         let oyunBasladi = false;
 
-        // Ekranı Kapla
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Görselleri Yükle
         const arkaplanImg = new Image();
-        arkaplanImg.src = 'arkaplan.jpg'; // Klasöründeki resimle aynı isim olmalı
+        arkaplanImg.src = 'arkaplan.jpg'; 
 
         const hedefImg = new Image();
-        hedefImg.src = 'hedef.png'; // Klasöründeki resimle aynı isim olmalı
+        hedefImg.src = 'hedef.png'; 
 
-        let hedef = { x: 100, y: 100, width: 150, height: 0 };
-
-        hedefImg.onload = function() {
-            // Resim yüklenince boyutu oranla
-            const oran = 150 / hedefImg.width;
-            hedef.height = hedefImg.height * oran;
-            yeniKonum();
-        };
+        let hedef = { x: 100, y: 100, width: 150, height: 150 };
 
         function yeniKonum() {
             hedef.x = Math.random() * (canvas.width - hedef.width);
@@ -56,19 +54,17 @@
         }
 
         function ciz() {
-            // Arka planı çiz
             ctx.drawImage(arkaplanImg, 0, 0, canvas.width, canvas.height);
-            // Hedefi çiz
             ctx.drawImage(hedefImg, hedef.x, hedef.y, hedef.width, hedef.height);
             requestAnimationFrame(ciz);
         }
 
-        // Tıklama Kontrolü
         canvas.addEventListener("mousedown", (e) => {
-            // İlk tıklamada müziği başlat (Tarayıcı kuralı: kullanıcı etkileşimi şart)
             if(!oyunBasladi) {
-                document.getElementById("arkaPlanSes").play();
+                const ses = document.getElementById("arkaPlanSes");
+                ses.play().catch(error => console.log("Ses oynatılamadı:", error));
                 oyunBasladi = true;
+                baslaMesaji.style.display = "none";
             }
 
             const mouseX = e.clientX;
@@ -82,7 +78,7 @@
             }
         });
 
-        arkaplanImg.onload = () => { ciz(); };
+        arkaplanImg.onload = () => { yeniKonum(); ciz(); };
     </script>
 </body>
 </html>
